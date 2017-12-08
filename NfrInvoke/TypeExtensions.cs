@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace NfrInvoke
+namespace NFRInvoke
 {
-    public static class TypeExtensions
+    static class TypeExtensions
     {
         /// <summary>
         /// Emulates default(T) for <paramref name="type"/> Isn't perfect for value types, as it will fail equality tests

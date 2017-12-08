@@ -7,8 +7,8 @@
     <ProjectGuid>{EE3DBD0B-43E0-4E4E-91E0-00330449CD81}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NfrInvoke</RootNamespace>
-    <AssemblyName>NfrInvoke</AssemblyName>
+    <RootNamespace>NFRInvoke</RootNamespace>
+    <AssemblyName>NFRInvoke</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

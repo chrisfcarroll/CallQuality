@@ -6,8 +6,8 @@
     <ProjectGuid>{796BB0C4-3A8B-4372-831A-D04F166081E3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NfrInvoke.Tests</RootNamespace>
-    <AssemblyName>NfrInvoke.Tests</AssemblyName>
+    <RootNamespace>NFRInvoke.Tests</RootNamespace>
+    <AssemblyName>NFRInvoke.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -35,18 +35,28 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Mono.Linq.Expressions">
-      <HintPath>..\NfrInvoke\packages\Mono.Linq.Expressions.1.2.0.0\lib\Mono.Linq.Expressions.dll</HintPath>
+    <Reference Include="nunit.core, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <HintPath>..\packages\NUnitTestAdapter.WithFramework.2.0.0\lib\nunit.core.dll</HintPath>
+      <Private>False</Private>
     </Reference>
-    <Reference Include="Moq">
-      <HintPath>..\NfrInvoke\packages\Moq.4.0.10827\lib\NET40\Moq.dll</HintPath>
+    <Reference Include="nunit.core.interfaces, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <HintPath>..\packages\NUnitTestAdapter.WithFramework.2.0.0\lib\nunit.core.interfaces.dll</HintPath>
+      <Private>False</Private>
     </Reference>
-    <Reference Include="nunit.framework">
-      <HintPath>..\NfrInvoke\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
+    <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <HintPath>..\packages\NUnitTestAdapter.WithFramework.2.0.0\lib\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.util, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <HintPath>..\packages\NUnitTestAdapter.WithFramework.2.0.0\lib\nunit.util.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="NUnit.VisualStudio.TestAdapter, Version=2.0.0.0, Culture=neutral, PublicKeyToken=4cb40d35494691ac, processorArchitecture=MSIL">
+      <HintPath>..\packages\NUnitTestAdapter.WithFramework.2.0.0\lib\NUnit.VisualStudio.TestAdapter.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="TestBase">
-      <HintPath>..\NfrInvoke\packages\TestBase.3.0.7.6\lib\net40\TestBase.dll</HintPath>
+    <Reference Include="TestBase, Version=3.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\TestBase.3.1.0.0\lib\net40\TestBase.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Choose>
@@ -58,16 +68,21 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="InvokeWrapperAssertions.cs" />
+    <Compile Include="..\NfrInvoke\Properties\AssemblyInfoShared.cs">
+      <Link>Properties\AssemblyInfoShared.cs</Link>
+    </Compile>
+    <Compile Include="Retry_Specs.cs" />
+    <Compile Include="InvokeWrapper_Specs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NfrInvoke\NfrInvoke.csproj">
+    <ProjectReference Include="..\NfrInvoke\NFRInvoke.csproj">
       <Project>{ee3dbd0b-43e0-4e4e-91e0-00330449cd81}</Project>
-      <Name>NfrInvoke</Name>
+      <Name>NFRInvoke</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

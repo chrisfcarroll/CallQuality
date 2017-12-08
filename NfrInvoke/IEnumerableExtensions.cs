@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace NfrInvoke
+namespace NFRInvoke
 {
-    public static class IEnumerableExtensions
+    static class IEnumerableExtensions
     {
         /// <summary>
         /// Returns the non-null elements of <paramref name="enumerable"/>

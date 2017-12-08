@@ -3,9 +3,9 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace NfrInvoke
+namespace NFRInvoke
 {
-    public static class StringExtensions
+    static class StringExtensions
     {
         public static bool ContainsOneOf(this string @this, string[] tokens) { return tokens.Any(@this.Contains); }
 

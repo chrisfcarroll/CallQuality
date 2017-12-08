@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Caching;
 
-namespace NfrInvoke
+namespace NFRInvoke
 {
     /// <summary>Memoize the results of method calls.</summary>
     public class Cacher : InvokeWrapper

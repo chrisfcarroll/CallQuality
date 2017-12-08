@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace NfrInvoke
+namespace NFRInvoke
 {
-    public static class WithAndEachExtensions
+    static class WithAndEachExtensions
     {
         /// <summary>
         /// Applies <paramref name="action"/> to <paramref name="this"/> and returns <paramref name="this"/>

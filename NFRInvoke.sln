@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.27205.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NfrInvoke", "NfrInvoke.csproj", "{EE3DBD0B-43E0-4E4E-91E0-00330449CD81}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NFRInvoke", "NfrInvoke\NFRInvoke.csproj", "{EE3DBD0B-43E0-4E4E-91E0-00330449CD81}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NfrInvoke.Tests", "..\NfrInvoke.Tests\NfrInvoke.Tests.csproj", "{796BB0C4-3A8B-4372-831A-D04F166081E3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NFRInvoke.Tests", "NfrInvoke.Tests\NFRInvoke.Tests.csproj", "{796BB0C4-3A8B-4372-831A-D04F166081E3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,5 +24,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {42571012-E562-466A-9331-1857ED8182D3}
 	EndGlobalSection
 EndGlobal

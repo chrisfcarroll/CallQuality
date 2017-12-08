@@ -2,9 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
-namespace NfrInvoke
+namespace NFRInvoke
 {
     /// <summary>Wrap calls in a try catch. On failure, log the exception and swallow it, returning:
     /// <list type="bullet">
@@ -15,56 +14,73 @@ namespace NfrInvoke
     /// </summary>
     public class CircuitBreaker : InvokeWrapper
     {
-        public static readonly int DefaultBreakForSeconds = Properties.Settings.Default.CMSDatabaseCircuitBreakBreaksForSeconds;
-        public static readonly int DefaultErrorsBeforeBreaking = Properties.Settings.Default.CMSDatabaseCircuitBreaksAfterNErrors;
+        public static readonly int DefaultBreakForSeconds = 15;
+        public static readonly int DefaultErrorsBeforeBreaking = 2;
 
-        /// <summary>If the breaker trips, how long to wait before retrying</summary>
+        /// <summary>A name for the circuit. Multiple breakers for the same CircuitName will share breakage history</summary>
+        public string CircuitName { get; }
+        /// <summary>How many errors does this circuit tolerate before breaking. This value cannot be reset after the first breaker for a <see cref="CircuitName"/> has set it.</summary>
+        public int ErrorsBeforeBreaking { get; }
+        /// <summary>If the circuit <see cref="CircuitName"/> errors, how long will this breaker be tripped before retrying</summary>
         public int BreakForSeconds { get; set; }
-        /// <summary>How many errors to tolerate before breaking</summary>
-        public int ErrorsBeforeBreaking { get; private set; }
 
-        public CircuitBreaker(string circuitName, Type[] exceptionsToThrowNotBreak = null, Type[] exceptionsToBreak = null, int? errorsBeforeBreaking = null, int? breakForSeconds = null, ILogger seriLogger = null)
+        /// <summary>Forget all state – errors and timings – being remembered for the circuit <paramref name="circuitName"/> and reset the <see cref="ErrorsBeforeBreaking"/> size.</summary>
+        public static void Reset(string circuitName, int? errorsBeforeBreaking=null) { lastErrors[circuitName] = new CircularQueue<DateTime>(errorsBeforeBreaking??DefaultErrorsBeforeBreaking); }
+
+        /// <summary>
+        /// Creates a breaker for the circuit <paramref name="circuitName"/>
+        /// </summary>
+        /// <param name="circuitName">Identifies the circuit. Multiple instances of <see cref="CircuitBreaker"/> for the same <paramref name="circuitName"/> 
+        /// will break the same circuit.</param>
+        /// <param name="errorsBeforeBreaking">This value is shared between all breakers for the same circuit. Only the first breaker created for a circuit can set this value. Subsequent values will be ignored.</param>
+        /// <param name="breakForSeconds">This value is specific to this breaker.</param>
+        /// <param name="exceptionsToThrowNotBreak"></param>
+        /// <param name="exceptionsToBreak"></param>
+        /// <param name="logCallAndParametersBeforeCall"></param>
+        /// <param name="logExceptionCaught"></param>
+        /// <param name="logExceptionWillBeThrown"></param>
+        /// <param name="logDroppedCallWhileCircuitBroken"></param>
+        public CircuitBreaker(string circuitName, int? errorsBeforeBreaking = null, int? breakForSeconds = null, Type[] exceptionsToThrowNotBreak = null, Type[] exceptionsToBreak = null, 
+                                Action<string> logCallAndParametersBeforeCall=null, 
+                                Action<Exception> logExceptionCaught = null, 
+                                Action<Exception> logExceptionWillBeThrown = null,
+                                Action logDroppedCallWhileCircuitBroken = null)
         {
-            logger = seriLogger??Log.Logger;
-            this.exceptionsToBreak = exceptionsToBreak??new[] {typeof (Exception)};
-            exceptionTypesToThrowNotBreak = exceptionsToThrowNotBreak ?? new Type[0];
-            this.circuitName = circuitName;
-            BreakForSeconds = breakForSeconds??DefaultBreakForSeconds;
+            this.CircuitName = circuitName;
             ErrorsBeforeBreaking = errorsBeforeBreaking ?? DefaultErrorsBeforeBreaking;
+            BreakForSeconds = breakForSeconds ?? DefaultBreakForSeconds;
+            exceptionTypesToThrowNotBreak = exceptionsToThrowNotBreak ?? new Type[0];
+            this.logCallAndParametersBeforeCall = logCallAndParametersBeforeCall ?? (s => { });
+            this.logExceptionWillBeThrown = logExceptionCaught ?? (e => { });
+            this.exceptionsToBreak = exceptionsToBreak??new[] {typeof (Exception)};
+            this.logDroppedCallWhileCircuitBroken = logDroppedCallWhileCircuitBroken;
+            this.logExceptionWillBeThrown = logExceptionWillBeThrown;
             if (!lastErrors.ContainsKey(circuitName)) { lastErrors[circuitName] = new CircularQueue<DateTime>(ErrorsBeforeBreaking); }
         }
 
         protected override T Invoke<T>(Func<T> callback, Delegate wrappedFunctionCall, params object[] parameters)
         {
-            if ((DateTime.Now - lastErrors[circuitName].Peek()).TotalSeconds > BreakForSeconds)
+            if ((DateTime.Now - lastErrors[CircuitName].Peek()).TotalSeconds > BreakForSeconds)
             {
                 try
                 {
-                    logger.Verbose("CircuitBreaker {circuitKeyName} trying {functionCall} at " + DateTime.Now, circuitName, ToShortString(wrappedFunctionCall,parameters));
+                    logCallAndParametersBeforeCall(ToShortString(wrappedFunctionCall,parameters));
                     //
                     var result = callback();
-                    lastErrors[circuitName].Empty();
+                    lastErrors[CircuitName].Empty();
                     return result;
                 }
                 catch (Exception e)
                 {
                     if (exceptionsToBreak.Any(et=>et.IsInstanceOfType(e)  && !exceptionTypesToThrowNotBreak.Contains(e.GetType())))
                     {
-                        lastErrors[circuitName].Push(DateTime.Now);
-                        logger.Warning(e, "CircuitBreaker {circuitKeyName} caught exception." + LoggingConfig.Template, circuitName);
+                        lastErrors[CircuitName].Push(DateTime.Now);
+                        logExceptionWillBeThrown(e);
                     }
-                    else
-                    {
-                        logger.Verbose(e, "CircuitBreaker {circuitKeyName} is rethrowing because an exception in its exceptionTypesToThrowNotBreak list." + LoggingConfig.Template, circuitName);
-                        throw;
-                    }
+                    else { logExceptionWillBeThrown(e); throw; }
                 }
             }
-            else
-            {
-                Log.Warning("CircuitBreaker {circuitKeyName} broke call to {method}. {BreakForSeconds}, {ErrorsBeforeBreaking}" + LoggingConfig.Template,
-                            circuitName, MethodName(callback.Method), BreakForSeconds, ErrorsBeforeBreaking);
-            }
+            else { logDroppedCallWhileCircuitBroken(); }
 
             return EmptyCollectionOrDefault<T>();
         }
@@ -76,46 +92,31 @@ namespace NfrInvoke
                 var t = typeof(T);
                 if (t.IsArray)
                 {
+                    // ReSharper disable once AssignNullToNotNullAttribute
                     return (T)(object)Array.CreateInstance(t.GetElementType(), 0);
                 }
-                else if (typeof (IEnumerable).IsAssignableFrom(t))
+                if (typeof (IEnumerable).IsAssignableFrom(t))
                 {
                     if (t.IsInterface)
                     {
-                        //this only copes with the case where t is IEnumerable<TItem>. Otherwise throw
+                        //this only copes with the case where t is IEnumerable<TItem>
                         var listof = typeof (List<>);
                         var typetomake = listof.MakeGenericType(t.GetGenericArguments());
                         return (T)Activator.CreateInstance(typetomake);
                     }
                     return Activator.CreateInstance<T>();
                 }
-                else 
-                { 
-                    return default(T);
-                }
             }
-            catch (Exception e)
-            {
-                var ae= new ApplicationException("Failed to make an instance of " + typeof(T), e);
-                logger.Information(ae, LoggingConfig.Template);
-                return default(T);
-            }
+            catch{}
+            return default(T);
         }
 
-        readonly ILogger logger;
-        readonly string circuitName;
+        readonly Action logDroppedCallWhileCircuitBroken;
         readonly Type[] exceptionsToBreak;
         readonly Type[] exceptionTypesToThrowNotBreak;
         static readonly Dictionary<string, CircularQueue<DateTime>> lastErrors = new Dictionary<string, CircularQueue<DateTime>>();
-
-        string MethodName(MethodInfo methodInfo)
-        {
-            var hasType = methodInfo.DeclaringType != null;
-            var typeName = hasType ? methodInfo.DeclaringType.FullName : methodInfo.GetHashCode().ToString();
-            return string.Format("{0}.{1}", typeName, methodInfo.Name);
-        }
-
-        public static void Forget(string circuitName) { if(lastErrors.ContainsKey(circuitName)){lastErrors.Remove(circuitName);}}
+        Action<string> logCallAndParametersBeforeCall;
+        Action<Exception> logExceptionWillBeThrown;
     }
 
     class CircularQueue<T>

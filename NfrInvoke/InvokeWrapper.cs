@@ -1,7 +1,7 @@
 using System;
 using System.Reflection;
 
-namespace NfrInvoke
+namespace NFRInvoke
 {
     /// <summary>
     /// Wrap calls to a method so that NFRs such as caching, circuit break, logging, timing can be applied
@@ -11,9 +11,9 @@ namespace NfrInvoke
         /// <summary> Override this to intercept the function call. </summary>
         /// <param name="callback">You must call this with no parameters - <paramref name="callback"/>() - to invoke the method or function being wrapped.</param>
         /// <param name="wrappedFunctionCall">Info about the method or function being wrapped.</param>
-        /// <param name="parameters"></param>
+        /// <param name="originalParameters"></param>
         /// <returns></returns>
-        protected abstract T Invoke<T>(Func<T> callback, Delegate wrappedFunctionCall, params object[] parameters);
+        protected abstract T Invoke<T>(Func<T> callback, Delegate wrappedFunctionCall, params object[] originalParameters);
 
         public TR Call<TR>(Func<TR> callback) { return Invoke(callback, callback); }
 
@@ -101,25 +101,15 @@ namespace NfrInvoke
         /// <returns>A string representation of an invocation of <paramref name="wrappedFunctionCallMethodInfo"/> on <paramref name="parameters"/></returns>
         public string ToString(MethodInfo wrappedFunctionCallMethodInfo, params object[] parameters)
         {
-            string assemblyName;
-            string typeName;
-            var hasType = wrappedFunctionCallMethodInfo.DeclaringType != null;
-            if (hasType)
-            {
-                typeName = wrappedFunctionCallMethodInfo.DeclaringType.FullName + ".";
-                assemblyName = wrappedFunctionCallMethodInfo.DeclaringType.Assembly.FullName;
-            }
-            else
-            {
-                typeName = "";
-                assemblyName = wrappedFunctionCallMethodInfo.GetHashCode().ToString();
-            }
-
+            var methodInfo = wrappedFunctionCallMethodInfo;
+            var hasType = methodInfo.DeclaringType != null;
+            var typeName =     hasType ? methodInfo.DeclaringType.FullName : "";
+            var assemblyName = hasType ? methodInfo.DeclaringType.AssemblyQualifiedName?.Replace(methodInfo.DeclaringType?.FullName ?? "", "").TrimStart(',', ' ') : null;
             return string.Format("{0}{1}({2}):{3}",
                         typeName,
-                        wrappedFunctionCallMethodInfo.Name,
+                        methodInfo.Name,
                         string.Join(", ", parameters),
-                        assemblyName);
+                        assemblyName ?? methodInfo.GetHashCode().ToString());
         }
         /// <summary>
         /// This method is intended to be used from within <see cref="Invoke{T}"/>, where it has access to the parameters needed to be useful.
