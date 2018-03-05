@@ -1,4 +1,4 @@
-# NFRInvoke : a simple pattern for NFRs for function calls :retry, circuit-breaker, caching, timing, logging, etc.
+# NFRInvoke : a simple pattern for function-call NFRs : retry, circuit-breaker, caching, timing, logging
 
 NFRInvoke provides a simple pattern for addressing software quality requirements, or NFRS, or cross-cutting concerns, around distributed calls. Use it in where you can't or won't use MSIL rewrite techniques.
 
