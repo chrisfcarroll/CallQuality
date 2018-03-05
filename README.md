@@ -20,7 +20,8 @@ var r3=breaker.Call(Method1, p1,p2);
 var r4=breaker.Call(Method2, p1,p2,p3);
 
 var r5= new Retry(timeout, maxRetries: 3).Do(Method3, 1)
-var r6= new Retry(timeout, Retry.ExponentialBackOff(TimeSpan.FromMilliseconds(10)));
+var backoffRetry= new Retry(timeout, Retry.ExponentialBackOff(TimeSpan.FromMilliseconds(10)));
+backoffRetry.Call(ContestedMethod);
 
 var callTimes= new List<TimeSpan>();
 var callTimer = new CallTimer(ts=> callTimes.Add(ts));
