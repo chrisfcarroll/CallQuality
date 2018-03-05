@@ -19,7 +19,7 @@ namespace NFRInvoke
                 try{ return callback(); }
                 catch(Exception e)
                 {
-                    logExceptionCaught(e);
+                    onExceptionDuringRetry(e);
                     Thread.Sleep(waitRetryAlgorithm());
                 } 
             }
@@ -29,23 +29,23 @@ namespace NFRInvoke
         readonly TimeSpan timeout;
         readonly Func<TimeSpan> waitRetryAlgorithm;
         readonly int maxRetries;
-        readonly Action<Exception> logExceptionCaught;
+        readonly Action<Exception> onExceptionDuringRetry;
 
         /// <param name="timeout"></param>
         /// <param name="waitRetryAlgorithm">This function will be called once for each failure, and indicates how long to wait until the next retry.</param>
         /// <param name="maxRetries">Note that maximum zero <strong>retries</strong> still means 1 try</param>
-        /// <param name="logExceptionCaught"></param>
-        public Retry(TimeSpan timeout, Func<TimeSpan> waitRetryAlgorithm, int maxRetries = int.MaxValue, Action<Exception> logExceptionCaught = null)
+        /// <param name="onExceptionDuringRetry">This action is called when an exception is thrown by an attempted call, but we haven't finished retrying yet.</param>
+        public Retry(TimeSpan timeout, Func<TimeSpan> waitRetryAlgorithm, int maxRetries = int.MaxValue, Action<Exception> onExceptionDuringRetry = null)
         {
             this.timeout = timeout > TimeSpan.Zero ? timeout : TimeSpan.MaxValue;
             this.waitRetryAlgorithm = waitRetryAlgorithm;
             this.maxRetries = maxRetries;
-            this.logExceptionCaught = logExceptionCaught ?? (e => { });
+            this.onExceptionDuringRetry = onExceptionDuringRetry ?? (e => { });
         }
-        public Retry(int timeoutMillis, Func<TimeSpan> waitRetryAlgorithm, int maxRetries = int.MaxValue, Action<Exception> logExceptionCaught = null) : this(TimeSpan.FromMilliseconds(timeoutMillis), waitRetryAlgorithm, maxRetries, logExceptionCaught) { }
-        public Retry(TimeSpan timeout, TimeSpan waitRetryInterval, int maxRetries = int.MaxValue, Action<Exception> logExceptionCaught=null) : this(timeout, () => waitRetryInterval, maxRetries, logExceptionCaught) { }
-        public Retry(int timeoutMillis, int waitRetryIntervalMillis, int maxRetries = int.MaxValue, Action<Exception> logExceptionCaught = null)
-                    : this(new TimeSpan(0, 0, 0, 0, timeoutMillis), new TimeSpan(0, 0, 0, 0, waitRetryIntervalMillis), maxRetries,logExceptionCaught) { }
+        public Retry(int timeoutMillis, Func<TimeSpan> waitRetryAlgorithm, int maxRetries = int.MaxValue, Action<Exception> onExceptionDuringRetry = null) : this(TimeSpan.FromMilliseconds(timeoutMillis), waitRetryAlgorithm, maxRetries, onExceptionDuringRetry) { }
+        public Retry(TimeSpan timeout, TimeSpan waitRetryInterval, int maxRetries = int.MaxValue, Action<Exception> onExceptionDuringRetry=null) : this(timeout, () => waitRetryInterval, maxRetries, onExceptionDuringRetry) { }
+        public Retry(int timeoutMillis, int waitRetryIntervalMillis, int maxRetries = int.MaxValue, Action<Exception> onExceptionDuringRetry = null)
+                    : this(new TimeSpan(0, 0, 0, 0, timeoutMillis), new TimeSpan(0, 0, 0, 0, waitRetryIntervalMillis), maxRetries,onExceptionDuringRetry) { }
 
         /// <summary>Returns a retry function which doubles the wait interval each time</summary>
         public static Func<TimeSpan> ExponentialBackOff(TimeSpan firstWaitInterval)

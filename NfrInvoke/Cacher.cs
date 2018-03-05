@@ -18,33 +18,36 @@ namespace NFRInvoke
             if (value == null)
             {
                 value = callback();
-                if (value != null)
-                {
-                    Cache.Add(keystring, value, DateTime.Now.AddSeconds(CacheTimeSeconds));
-                    keys.Add(keystring);
-                }
+                Cache.Add(keystring, value??NullPlaceholder, DateTime.Now + CacheTime);
+                keys.Add(keystring);
             }
-            return (T)value;
+
+            return value != null || typeof(T).IsValueType
+                ? (T) value
+                : (value.Equals(NullPlaceholder) ? (T)(object)null : (T) value);
         }
+        /// <summary>Clear all cached entries known to this instance.</summary>
+        public void Clear() { keys.ForEach(key => Cache.Remove(key)); keys.Clear();}
+
+        /// <summary>Two instances of <see cref="Cacher"/> with the same <see cref="UniqueName"/> will share cache entries.</summary>
+        public readonly string UniqueName;
+
+        /// <summary>The TimeSpan for which entries should be cached.</summary>
+        /// <remarks>If two <see cref="Cacher"/>s share the same name but different <see cref="CacheTime"/>, then the Cacher which puts a value into Cache will determine how long it is cached for.</remarks>
+        public readonly TimeSpan CacheTime;
 
         string KeyFor(Delegate @delegate, params object[] parameters) {return ToString(@delegate, parameters) + ":" + UniqueName;}
+        readonly List<string> keys = new List<string>();
 
-
-        public readonly string UniqueName;
-        public readonly int CacheTimeSeconds;
-        //TODO: Replace this with a pair of delegates
-        public static readonly MemoryCache Cache = MemoryCache.Default;
-        static readonly List<string> keys = new List<string>();
-
-        public static void EmptyCaches() { keys.ForEach(key => Cache.Remove(key)); }
-
-        /// <param name="cacheTimeSeconds">Used to set absolute expiry this many seconds in the future</param>
-        /// <param name="uniqueName">Optional because your methods are usually uniquely identified by AssemblyQualifiedTypeName.MethodName.</param>
-        public Cacher(int cacheTimeSeconds, string uniqueName="")
+        /// <param name="cacheTime">Used to set absolute expiry this many seconds in the future</param>
+        /// <param name="uniqueName">Optional because your methods are usually uniquely identified by the MethodName and parameters of each call.</param>
+        public Cacher(TimeSpan cacheTime, string uniqueName="")
         {
             UniqueName = uniqueName;
-            CacheTimeSeconds = cacheTimeSeconds;
-            if (CacheTimeSeconds < 1) { CacheTimeSeconds = 1; }
+            CacheTime = cacheTime;
         }
+
+        public static readonly MemoryCache Cache = MemoryCache.Default;
+        static readonly object NullPlaceholder= new object();
     }
 }

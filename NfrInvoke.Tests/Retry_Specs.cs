@@ -21,7 +21,7 @@ namespace NFRInvoke.Tests
         [TestCase(1000)]
         public void RetryDo__AttemptsToCallAndCatchesExceptions(int timeout)
         {
-            var sut = new Retry(timeout, 1, logExceptionCaught: e=>Failures.Add(e));
+            var sut = new Retry(timeout, 1, onExceptionDuringRetry: e=>Failures.Add(e));
             var stopwatch = Stopwatch.StartNew();
             sut.Do( p=> Throw3TimesIfThereIsTimeLeftThenRecordSuccess(p,stopwatch,timeout), 1);
             //
@@ -44,7 +44,7 @@ namespace NFRInvoke.Tests
         public void RetryDo__ObeysTheRetryWaitAlgorithm(int timeout)
         {
             var attempts = 0;
-            var sut = new Retry(timeout, Retry.ExponentialBackOff(TimeSpan.FromMilliseconds(10)), logExceptionCaught: e => Failures.Add(e));
+            var sut = new Retry(timeout, Retry.ExponentialBackOff(TimeSpan.FromMilliseconds(10)), onExceptionDuringRetry: e => Failures.Add(e));
             //
             //Trial with Backoff
             var stopwatchBackoff = Stopwatch.StartNew();

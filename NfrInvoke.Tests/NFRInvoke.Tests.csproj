@@ -71,6 +71,10 @@
     <Compile Include="..\NfrInvoke\Properties\AssemblyInfoShared.cs">
       <Link>Properties\AssemblyInfoShared.cs</Link>
     </Compile>
+    <Compile Include="CacherSpecs.cs" />
+    <Compile Include="CallTimerTests.cs" />
+    <Compile Include="InvokeChainingSpecs.cs" />
+    <Compile Include="CircuitBreakerSpecs.cs" />
     <Compile Include="Retry_Specs.cs" />
     <Compile Include="InvokeWrapper_Specs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

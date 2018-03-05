@@ -4,8 +4,25 @@ using System.Reflection;
 namespace NFRInvoke
 {
     /// <summary>
-    /// Wrap calls to a method so that NFRs such as caching, circuit break, logging, timing can be applied
+    /// Wrap calls to a method so that NFRs such as caching, circuit break, logging, timing can be applied.
     /// </summary>
+    /// <remarks> 
+    /// To wrap an Action rather than a Function, use the <see cref="Do"/> overloads.
+    /// To wrap a function with returns a values, use the <see cref="Call"/> overloads.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var callTimes= new List&lt;TimeSpan&gt;();
+    /// var callTimer = new CallTimer(ts=&gt; callTimes.Add(ts));
+    /// 
+    /// callTime.Call(AnAction);
+    /// var a= callTimer.Call(Method1 , 1);
+    /// var b= callTimer.Call(Method2 , 1,2);
+    /// var c= callTimer.Call(Method3 , "1", "2", "3");
+    /// 
+    /// callTimes.Count.ShouldBe(4);
+    /// </code>
+    /// </example>
     public abstract class InvokeWrapper
     {
         /// <summary> Override this to intercept the function call. </summary>
@@ -137,6 +154,11 @@ namespace NFRInvoke
                         typeName,
                         wrappedFunctionCallMethodInfo.Name,
                         string.Join(", ", parameters));
+        }
+
+        internal protected T ChainableInvoke<T>(Func<T> callback, Delegate wrappedFunctionCall, params object[] originalParameters)
+        {
+            return Invoke<T>(callback, wrappedFunctionCall, originalParameters);
         }
     }
 }
