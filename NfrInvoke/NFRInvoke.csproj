@@ -2,10 +2,22 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageVersion>2.0.0.0-prerelease-pending-system-runtime-caching</PackageVersion>
+    <AssemblyFileVersion>2.0.0.0</AssemblyFileVersion>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <Title>NFRInvoke - a simple extensible pattern for wrapping function calls for NFRs :retry, circuit-breaker, caching, timing, logging, etc. </Title>
+    <AssemblyDescription></AssemblyDescription>
+    <ReleaseNotes>2.0 netstandard 2</ReleaseNotes>
+    <Copyright>(c) Chris F. Carroll, 2016-2018</Copyright>
+    <Authors>Chris F Carroll</Authors>
+    <Owners>Chris F Carroll</Owners>
+    <ProjectUrl>http://github.com/chrisfcarroll/InvokeWrappers</ProjectUrl>
+    <RequireLicenseAcceptance>false</RequireLicenseAcceptance>
+    <Tags>caching timer circuit-breaker circuitbreaker retry logging nfr architectural invoke</Tags>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Runtime.Caching" />
+    <PackageReference Include="System.Runtime.Caching" Version="4.5.0-preview1-26216-02" />
   </ItemGroup>
 
 </Project>

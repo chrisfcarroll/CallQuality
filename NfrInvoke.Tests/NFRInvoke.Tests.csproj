@@ -73,7 +73,7 @@
     <Compile Include="CallTimerTests.cs" />
     <Compile Include="InvokeChainingSpecs.cs" />
     <Compile Include="CircuitBreakerSpecs.cs" />
-    <Compile Include="Retry_Specs.cs" />
+    <Compile Include="RetrySpecs.cs" />
     <Compile Include="InvokeWrapper_Specs.cs" />
   </ItemGroup>
   <ItemGroup>

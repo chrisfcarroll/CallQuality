@@ -7,7 +7,7 @@ using TestBase.Shoulds;
 namespace NFRInvoke.Tests
 {
     [TestFixture]
-    public class Retry_Specs
+    public class RetrySpecs
     {
         [Test]
         public void RetryDo__CallsTheWrappedCall()
