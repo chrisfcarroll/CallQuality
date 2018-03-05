@@ -8,7 +8,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NFRInvoke.Tests</RootNamespace>
     <AssemblyName>NFRInvoke.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
@@ -16,6 +16,7 @@
     <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
     <IsCodedUITest>False</IsCodedUITest>
     <TestProjectType>UnitTest</TestProjectType>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -68,24 +69,23 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="..\NfrInvoke\Properties\AssemblyInfoShared.cs">
-      <Link>Properties\AssemblyInfoShared.cs</Link>
-    </Compile>
     <Compile Include="CacherSpecs.cs" />
     <Compile Include="CallTimerTests.cs" />
     <Compile Include="InvokeChainingSpecs.cs" />
     <Compile Include="CircuitBreakerSpecs.cs" />
     <Compile Include="Retry_Specs.cs" />
     <Compile Include="InvokeWrapper_Specs.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\NfrInvoke\NFRInvoke.csproj">
-      <Project>{ee3dbd0b-43e0-4e4e-91e0-00330449cd81}</Project>
+      <Project>{d7e3492b-ece2-4a11-92b8-eabd170e9f4f}</Project>
       <Name>NFRInvoke</Name>
     </ProjectReference>
   </ItemGroup>
