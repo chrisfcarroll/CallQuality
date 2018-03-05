@@ -21,7 +21,7 @@ namespace NFRInvoke.Tests
         [Test]
         public void CircuitBreaker__ResumesCallsAfterTimeout()
         {
-            var sut = new CircuitBreaker(nameof(CircuitBreaker__ResumesCallsAfterTimeout), 2, TimeSpan.FromSeconds(1), onDroppedCallWhileCircuitBroken: ()=>droppedCalls++);
+            var sut = new CircuitBreaker(nameof(CircuitBreaker__ResumesCallsAfterTimeout), 2, TimeSpan.FromSeconds(1), onDroppedCallWhileCircuitBroken: s=>droppedCalls++);
 
             sut.Do(()=>FailNTimesThenSucceed(99, "F")); //Fail
             sut.Do(()=>FailNTimesThenSucceed(99, "F")); //Fail 2nd time
@@ -44,7 +44,7 @@ namespace NFRInvoke.Tests
                 nameof(CircuitBreaker__DropsCallsWhenBroken) + errorsBeforeBreaking, 
                 errorsBeforeBreaking, 
                 TimeSpan.MaxValue, 
-                onDroppedCallWhileCircuitBroken: ()=>droppedCalls++);
+                onDroppedCallWhileCircuitBroken: s=>droppedCalls++);
 
             for (int i = 0; i < 10; i++)
             {
@@ -59,7 +59,7 @@ namespace NFRInvoke.Tests
         [Test]
         public void CircuitBreaker__DropsCallsWhenBroken__GivenImmediateFailure()
         {
-            var sut = new CircuitBreaker("Test2", 1, TimeSpan.MaxValue, onDroppedCallWhileCircuitBroken: ()=>droppedCalls++);
+            var sut = new CircuitBreaker("Test2", 1, TimeSpan.MaxValue, onDroppedCallWhileCircuitBroken: s=>droppedCalls++);
             for (int i = 0; i < 10; i++)
             {
                 sut.Do(p => Fail3TimesThenSucceed(p), 1);
@@ -75,7 +75,7 @@ namespace NFRInvoke.Tests
         {
             for (int i = 0; i < 10; i++)
             {
-                new CircuitBreaker("Test3", 1, TimeSpan.MaxValue, onDroppedCallWhileCircuitBroken: () => droppedCalls++).Do(p => Fail3TimesThenSucceed(p),1);
+                new CircuitBreaker("Test3", 1, TimeSpan.MaxValue, onDroppedCallWhileCircuitBroken: s=>droppedCalls++).Do(p => Fail3TimesThenSucceed(p),1);
             }
 
             Failures.Count.ShouldBe(1);

@@ -31,10 +31,11 @@ namespace NFRInvoke
         readonly int maxRetries;
         readonly Action<Exception> onExceptionDuringRetry;
 
-        /// <param name="timeout"></param>
+        /// <param name="timeout">The time to keep retrying. Once this time is expired,a final attempt will be made to make the call. Any exceptions raised by this final try will be thrown.</param>
         /// <param name="waitRetryAlgorithm">This function will be called once for each failure, and indicates how long to wait until the next retry.</param>
         /// <param name="maxRetries">Note that maximum zero <strong>retries</strong> still means 1 try</param>
         /// <param name="onExceptionDuringRetry">This action is called when an exception is thrown by an attempted call, but we haven't finished retrying yet.</param>
+        /// <remarks>Retry will catch exceptions while it is retrying. Exception can be seen by using the <paramref name="onExceptionDuringRetry"/> callback. </remarks>
         public Retry(TimeSpan timeout, Func<TimeSpan> waitRetryAlgorithm, int maxRetries = int.MaxValue, Action<Exception> onExceptionDuringRetry = null)
         {
             this.timeout = timeout > TimeSpan.Zero ? timeout : TimeSpan.MaxValue;

@@ -43,7 +43,7 @@ namespace NFRInvoke
         /// <param name="exceptionsToThrowNotBreak">If the invoked methods throws one of these exceptions, it will be thrown. Otherwise it will be caught and not thrown. Defaults to an empty array.</param>
         /// <param name="exceptionsToBreak">If the invoked methods throws one of these exceptions, it will break the circuit. Defaults to `new[]{typeof(Exception)}`.</param>
         /// <param name="onBeforeInvoke">This callback will be called before invocation</param>
-        /// <param name="onExceptionCaught">This callback will be called if an exception is caught. Note that circuit catches most exceptions</param>
+        /// <param name="onExceptionWasCaught">This callback will be called if an exception is caught. Note that circuit catches most exceptions</param>
         /// <param name="onExceptionWillBeThrown">This callback will be called before an exception in <paramref name="exceptionsToThrowNotBreak"/> is thrown.</param>
         /// <param name="onDroppedCallWhileCircuitBroken">This callback will be called each time an invocation is not made because the circuit is broken.</param>
         public CircuitBreaker(string circuitName, int? errorsBeforeBreaking = null, 
@@ -51,19 +51,19 @@ namespace NFRInvoke
                                 Type[] exceptionsToThrowNotBreak = null, 
                                 Type[] exceptionsToBreak = null, 
                                 Action<string> onBeforeInvoke=null, 
-                                Action<Exception> onExceptionCaught = null, 
+                                Action<Exception> onExceptionWasCaught = null, 
                                 Action<Exception> onExceptionWillBeThrown = null,
-                                Action onDroppedCallWhileCircuitBroken = null)
+                                Action<string> onDroppedCallWhileCircuitBroken = null)
         {
             this.CircuitName = circuitName;
             ErrorsBeforeBreaking = errorsBeforeBreaking ?? DefaultErrorsBeforeBreaking;
             BreakForHowLong = breakForHowLong ?? TimeSpan.FromSeconds(DefaultBreakForSeconds);
             exceptionTypesToThrowNotBreak = exceptionsToThrowNotBreak ?? new Type[0];
-            this.logCallAndParametersBeforeCall = onBeforeInvoke ?? (s => { });
-            this.onExceptionWillBeThrown = onExceptionCaught ?? (e => { });
+            this.onBeforeInvoke = onBeforeInvoke ;
+            this.onExceptionWasCaught = onExceptionWasCaught;
             this.exceptionsToBreak = exceptionsToBreak??new[] {typeof (Exception)};
-            this.logDroppedCallWhileCircuitBroken = onDroppedCallWhileCircuitBroken ?? (() => { }) ;
-            this.onExceptionWillBeThrown = onExceptionWillBeThrown ?? (e => { })   ;
+            this.onDroppedCallWhileCircuitBroken = onDroppedCallWhileCircuitBroken ;
+            this.onExceptionWillBeThrown = onExceptionWillBeThrown;
             if (!lastErrors.ContainsKey(circuitName)) { lastErrors[circuitName] = new CircularQueue<DateTime>(ErrorsBeforeBreaking); }
         }
 
@@ -73,7 +73,7 @@ namespace NFRInvoke
             {
                 try
                 {
-                    logCallAndParametersBeforeCall(ToShortString(wrappedFunctionCall,parameters));
+                    onBeforeInvoke?.Invoke(ToShortString(wrappedFunctionCall,parameters));
                     //
                     var result = callback();
                     lastErrors[CircuitName].Empty();
@@ -84,12 +84,12 @@ namespace NFRInvoke
                     if (exceptionsToBreak.Any(et=>et.IsInstanceOfType(e)  && !exceptionTypesToThrowNotBreak.Contains(e.GetType())))
                     {
                         lastErrors[CircuitName].Push(DateTime.Now);
-                        onExceptionWillBeThrown(e);
+                        onExceptionWasCaught?.Invoke(e);
                     }
-                    else { onExceptionWillBeThrown(e); throw; }
+                    else { onExceptionWillBeThrown?.Invoke(e); throw; }
                 }
             }
-            else { logDroppedCallWhileCircuitBroken(); }
+            else { onDroppedCallWhileCircuitBroken?.Invoke(ToShortString(wrappedFunctionCall, parameters)); }
 
             return DefaultOrEmptyCollection<T>();
         }
@@ -120,12 +120,13 @@ namespace NFRInvoke
             return default(T);
         }
 
-        readonly Action logDroppedCallWhileCircuitBroken;
+        readonly Action<string> onDroppedCallWhileCircuitBroken;
         readonly Type[] exceptionsToBreak;
         readonly Type[] exceptionTypesToThrowNotBreak;
         static readonly Dictionary<string, CircularQueue<DateTime>> lastErrors = new Dictionary<string, CircularQueue<DateTime>>();
-        Action<string> logCallAndParametersBeforeCall;
+        Action<string> onBeforeInvoke;
         Action<Exception> onExceptionWillBeThrown;
+        Action<Exception> onExceptionWasCaught;
         TimeSpan breakForHowLong;
     }
 
